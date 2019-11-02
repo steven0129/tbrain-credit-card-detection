@@ -30,11 +30,11 @@ class FeatureHashing():
         self.label_encs = dict(zip(keys, [LabelEncoder() for _ in keys]))
 
         for key in keys:
-            self.label_encs[key].fit(X[key].values)
+            X = self.label_encs[key].fit_transform(X[key].values)
 
         X = self._hash_func(X)
-        self.onehot_enc.fit(X)
-        self.svd.fit(X)
+        X = self.onehot_enc.fit_transform(X)
+        X = self.svd.fit_transform(X)
 
         return self
 
