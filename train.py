@@ -1,21 +1,13 @@
-import numpy as np
-import pandas as pd
-import category_encoders as ce
 import joblib
 import smtplib
 import getpass
+import os
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.utils import shuffle
 from custom_model import LightGBDT
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score
-from functools import reduce
-from utils import gt
-from sklearn.preprocessing import LabelEncoder
 from preprocessing import FeatureHashing
-from scipy.sparse import csr_matrix
 
 # Login gmail account
 username = input('Input your gmail username: ')
@@ -40,11 +32,11 @@ del Y
 
 print('Training model...')
 params = {
-    'n_estimators': 20000,
+    'n_estimators': 10000,
     'lr': 0.01,
-    'base_lr': 0.01,
+    'base_lr': 0.1,
     'focal_alpha': 0.5,
-    'focal_gamma': 1
+    'focal_gamma': 4
 }
 model = LightGBDT(**params)
 model.fit(X_train, Y_train, 
@@ -56,7 +48,7 @@ print(f'F1-score = {score}')
 
 # Save model
 print('Saving model...')
-joblib.dump(model, f'checkpoint/gbdt-model.pkl')
+joblib.dump(model, 'checkpoint/gbdt-model.pkl')
 joblib.dump(encoder, 'checkpoint/encoder.pkl')
 
 # Send email
