@@ -114,7 +114,6 @@ class LightGBDT(BaseEstimator, ClassifierMixin):
 
     def predict(self, X):
         check_is_fitted(self, ['X_', 'y_'])
-        X = check_array(X)
         X = self.gbdt.predict(X, raw_score=True)
         X = self._sigmoid(X)
         pred_labels = np.around(X).astype(int)
