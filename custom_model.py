@@ -107,8 +107,7 @@ class LightGBDT(BaseEstimator, ClassifierMixin):
                 self._f1_score(y_true, y_pred)
             ],
             verbose=100,
-            early_stopping_rounds=5000,
-            callbacks=[lgb.reset_parameter(learning_rate=self._learning_rate_decay)]
+            callbacks=[lgb.reset_parameter(learning_rate=self._lr_linear_cosine_decay)]
         )
 
         return self
@@ -149,12 +148,24 @@ class LightGBDT(BaseEstimator, ClassifierMixin):
     def _scaled_tanh(self, x):
         return (np.tanh(x) + 1) / 2
 
-    def _learning_rate_decay(self, curr_round):
+    def _lr_cosine_decay(self, curr_round):
+        # 0.5 * (1+cos(​π*​x))
         total_round = self.n_estimators
         cosine_decayed = 0.5 * (1 + math.cos(math.pi * curr_round / total_round))
         decayed = (1 - self.base_lr) * cosine_decayed + self.base_lr
         decayed_lr = self.lr * decayed
-        if curr_round % 100 == 0: print(f'curr_round = {curr_round}, learning rate cosine decayed = {decayed_lr}')
+        if curr_round % 100 == 0: print(f'[{curr_round}] learning rate = {decayed_lr}')
+        return decayed_lr
+
+    def _lr_linear_cosine_decay(self, curr_round):
+        # (1-​x) *​ 0.5 *​ (1+​cos(​π*​x))
+        total_round = self.n_estimators
+        x = curr_round / total_round
+        cosine_decayed = 0.5 * (1 + math.cos(math.pi * x))
+        linear_decayed = 1 - x
+        decayed = (1 - self.base_lr) * linear_decayed * cosine_decayed + self.base_lr
+        decayed_lr = self.lr * decayed
+        if curr_round % 100 == 0: print(f'[{curr_round}] learning rate = {decayed_lr}')
         return decayed_lr
 
 class FocalXGBDetector(BaseEstimator, ClassifierMixin):
